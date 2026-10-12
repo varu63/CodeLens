@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: proofloop-postgres
+    environment:
+      POSTGRES_USER: proofloop
+      POSTGRES_PASSWORD: proofloop
+      POSTGRES_DB: proofloop
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U proofloop -d proofloop']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: proofloop-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # S3-compatible object storage for artifacts.
+  # s3mock is used locally (MinIO stopped publishing community images to Docker Hub);
+  # the app talks plain S3 via the AWS SDK, so MinIO or real S3 drop in unchanged.
+  s3mock:
+    image: adobe/s3mock:latest
+    container_name: proofloop-s3
+    environment:
+      initialBuckets: proofloop
+    ports:
+      - '9090:9090'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9090/']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  pgdata:
+  redisdata:

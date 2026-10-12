@@ -1,0 +1,19 @@
+# Ephemeral sandbox used for every verification check.
+# The workspace is bind-mounted at /workspace; runner scripts arrive via
+# read-only mounts from the host, so this image stays deliberately minimal.
+FROM node:20-alpine
+
+RUN apk add --no-cache git curl
+
+# Load testing tool for the ramp checks (1 → 10 → 50 → user-max connections).
+RUN npm install -g autocannon@8 --no-audit --no-fund
+
+WORKDIR /workspace
+
+# Non-interactive npm for scripted installs
+ENV npm_config_audit=false \
+    npm_config_fund=false \
+    NO_COLOR=1 \
+    CI=1
+
+CMD ["sh", "-c", "echo 'proofloop sandbox — no default command'"]

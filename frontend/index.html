@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="ProofLoop — AI codebase verification. Tests decide pass or fail; AI explains why." />
+    <title>ProofLoop</title>
+    <script>
+      // Theme must be applied before first paint to avoid a flash. Dark is the default.
+      try {
+        var stored = localStorage.getItem('proofloop-theme')
+        var theme = stored === 'light' ? 'light' : 'dark'
+        document.documentElement.classList.remove('dark', 'light')
+        document.documentElement.classList.add(theme)
+        document.documentElement.style.colorScheme = theme
+      } catch (err) {
+        document.documentElement.classList.add('dark')
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
