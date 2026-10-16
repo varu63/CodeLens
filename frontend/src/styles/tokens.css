@@ -1,0 +1,83 @@
+/* ---------------------------------------------------------------------------
+   Auth-scoped design tokens.
+
+   These are the ONLY variable definitions used by the Sign In / Sign Up
+   screens. They live on the `.auth-scope` wrapper (never :root or body) so the
+   rest of the application is completely unaffected. Values mirror the app's
+   dark/light palette but are namespaced with an `auth-` prefix.
+
+   Imported by ./auth.css, which is imported only by the auth layout.
+--------------------------------------------------------------------------- */
+
+.auth-scope {
+  /* Radii */
+  --auth-radius: 8px;
+  --auth-radius-lg: 12px;
+
+  /* Typography (scoped — does not change the app's global font) */
+  --auth-font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --auth-font-display: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --auth-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+/* Dark is the default (no attribute, or data-auth-theme="dark"). */
+.auth-scope,
+.auth-scope[data-auth-theme='dark'] {
+  --auth-bg: 9 9 12;
+  --auth-surface: 17 17 22;
+  --auth-surface-2: 24 24 31;
+  --auth-sunken: 5 5 8;
+
+  --auth-border: 40 40 50;
+  --auth-text: 237 237 243;
+  --auth-text-muted: 160 160 178;
+  --auth-faint: 112 112 130;
+
+  --auth-accent: 129 140 248;
+  --auth-accent-hover: 165 180 252;
+  --auth-accent-soft: 39 39 78;
+  --auth-ring: 129 140 248;
+
+  --auth-success: 52 211 153;
+  --auth-warning: 251 191 36;
+  --auth-danger: 248 113 113;
+  --auth-info: 96 165 250;
+  --auth-high: 251 146 60;
+  --auth-violet: 167 139 250;
+  --auth-neutral: 156 163 175;
+
+  --auth-google-bg: 255 255 255;
+  --auth-google-fg: 23 23 23;
+  --auth-google-bg-hover: 236 236 236;
+
+  --auth-pastel-coral: 232 87 63;
+  --auth-pastel-yellow: 244 208 111;
+  --auth-pastel-teal: 94 199 182;
+}
+
+.auth-scope[data-auth-theme='light'] {
+  --auth-bg: 249 249 252;
+  --auth-surface: 255 255 255;
+  --auth-surface-2: 243 244 248;
+  --auth-sunken: 238 239 244;
+
+  --auth-border: 224 224 234;
+  --auth-text: 24 24 33;
+  --auth-text-muted: 98 98 116;
+  --auth-faint: 140 140 158;
+
+  --auth-accent: 79 70 229;
+  --auth-accent-hover: 67 56 202;
+  --auth-accent-soft: 238 238 255;
+  --auth-ring: 79 70 229;
+
+  --auth-success: 4 120 87;
+  --auth-warning: 180 83 9;
+  --auth-danger: 185 28 28;
+  --auth-info: 29 78 216;
+  --auth-high: 194 65 12;
+  --auth-violet: 109 40 217;
+  --auth-neutral: 71 85 105;
+}
