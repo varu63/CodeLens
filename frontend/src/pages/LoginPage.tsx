@@ -154,7 +154,7 @@ export function LoginPage() {
             onClick={handleGoogle}
             disabled={busy}
           >
-            <GoogleIcon className="h-4.5 w-4.5" />
+            <GoogleIcon className="h-4.5 w-4.5 size-0" />
             Continue with Google
           </Button>
 

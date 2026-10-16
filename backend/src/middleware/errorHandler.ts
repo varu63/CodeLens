@@ -1,9 +1,33 @@
 import type { NextFunction, Request, Response } from 'express'
 import { MulterError } from 'multer'
+import pg from 'pg'
 import { ZodError } from 'zod'
 import { isProduction } from '../config/env.js'
 import { AppError } from '../utils/errors.js'
 import { logger } from '../utils/logger.js'
+
+const { DatabaseError } = pg
+
+/** SQLSTATE / system codes that mean "the database itself is unreachable or unready". */
+const DB_FAILURE_CODES = new Set([
+  'ECONNREFUSED',
+  'ETIMEDOUT',
+  'EAI_AGAIN',
+  'ENOTFOUND',
+  '28P01', // invalid_password
+  '3D000', // invalid_catalog_name (database does not exist)
+  '42P01', // undefined_table (migrations not run)
+])
+
+function isDatabaseFailure(error: unknown): boolean {
+  if (error instanceof DatabaseError) return DB_FAILURE_CODES.has(error.code ?? '')
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    DB_FAILURE_CODES.has(String((error as { code: unknown }).code))
+  )
+}
 
 export interface ErrorBody {
   error: {
@@ -52,6 +76,16 @@ export function errorHandler(error: unknown, req: Request, res: Response, _next:
     const body: ErrorBody = { error: { code: error.code, message: error.message } }
     if (error.details !== undefined) body.error.details = error.details
     res.status(error.status).json(body)
+    return
+  }
+
+  if (isDatabaseFailure(error)) {
+    // Broken credentials, unreachable host or missing migrations — never leak
+    // connection details; the real error stays in the logs (and the response in dev).
+    logger.error({ err: error, url: req.originalUrl, method: req.method }, 'Database error')
+    const message = isProduction ? 'Service temporarily unavailable' : `Service temporarily unavailable: ${String(error)}`
+    const body: ErrorBody = { error: { code: 'SERVICE_UNAVAILABLE', message } }
+    res.status(503).json(body)
     return
   }
 

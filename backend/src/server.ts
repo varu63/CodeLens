@@ -1,10 +1,14 @@
 import { createApp } from './app.js'
+import { assertDatabaseReady } from './config/db.js'
 import { env } from './config/env.js'
 import { ensureBucket } from './config/storage.js'
 import { startRunWorker, stopRunWorker } from './queue/run.worker.js'
 import { logger } from './utils/logger.js'
 
 async function main(): Promise<void> {
+  // Fail fast: never start a server whose database is unreachable or unmigrated.
+  await assertDatabaseReady()
+
   try {
     await ensureBucket()
   } catch (error) {

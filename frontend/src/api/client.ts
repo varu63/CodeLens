@@ -90,12 +90,54 @@ export function getErrorMessage(error: unknown): string {
       ? `Too many requests. Try again in ${apiError.retryAfterSeconds}s.`
       : 'Too many requests. Please slow down and try again shortly.'
   }
-  if (apiError.status === 401) return 'Your session has expired. Please sign in again.'
+  // For everything else trust the server message when there is one (e.g.
+  // "Invalid email or password"); the fallbacks in normalizeError cover the rest.
   return apiError.message
 }
 
 export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError
+}
+
+/* -------------------------------------------------------------------------- */
+/* Session presence marker                                                    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The refresh token is an httpOnly cookie, so JS cannot tell whether a session
+ * exists. This non-secret localStorage flag (set on successful auth, cleared on
+ * logout/session-expiry) lets the app skip /auth/refresh entirely — including
+ * on the login page and before the first-ever login — instead of burning a
+ * request (and the dev rate budget) on a guaranteed 401.
+ */
+const SESSION_MARKER_KEY = 'proofloop:has-session'
+
+export function hasSessionMarker(): boolean {
+  try {
+    return window.localStorage.getItem(SESSION_MARKER_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function setSessionMarker(): void {
+  try {
+    window.localStorage.setItem(SESSION_MARKER_KEY, '1')
+  } catch {
+    // storage unavailable (private mode etc.) — refresh still works, just uncached
+  }
+}
+
+export function clearSessionMarker(): void {
+  try {
+    window.localStorage.removeItem(SESSION_MARKER_KEY)
+  } catch {
+    // storage unavailable — nothing to clear
+  }
+}
+
+function logErrorInDev(...args: unknown[]): void {
+  if (import.meta.env.DEV) console.error(...args)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -110,6 +152,7 @@ async function performRefresh(): Promise<string> {
     skipAuthRefresh: true,
   })
   useAuthStore.getState().setAuth(data.user ?? null, data.accessToken)
+  setSessionMarker()
   return data.accessToken
 }
 
@@ -128,6 +171,7 @@ function handleSessionExpired(): void {
   const { accessToken, user } = useAuthStore.getState()
   if (!accessToken && !user) return
   useAuthStore.getState().clear()
+  clearSessionMarker()
   const path = window.location.pathname
   if (path !== '/login' && path !== '/auth/callback') {
     window.location.assign('/login?expired=1')
@@ -157,6 +201,8 @@ client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 client.interceptors.response.use(
   (response) => response,
   async (error: unknown) => {
+    logErrorInDev('[api] request failed:', error)
+
     const axiosError = error instanceof AxiosError ? error : null
     const original = axiosError?.config as AxiosRequestConfig | undefined
     const status = axiosError?.response?.status
@@ -168,6 +214,7 @@ client.interceptors.response.use(
         original.headers = { ...(original.headers ?? {}), Authorization: `Bearer ${token}` }
         return await client.request(original)
       } catch (refreshError) {
+        logErrorInDev('[api] token refresh failed:', refreshError)
         handleSessionExpired()
         throw normalizeError(refreshError instanceof AxiosError && refreshError.response ? error : refreshError)
       }

@@ -1,4 +1,4 @@
-import { API_URL, client } from './client'
+import { API_URL, client, setSessionMarker } from './client'
 import type {
   AuthResponse,
   LoginRequest,
@@ -21,6 +21,7 @@ export async function refresh(): Promise<RefreshResponse> {
     skipAuth: true,
     skipAuthRefresh: true,
   })
+  setSessionMarker()
   return data
 }
 
@@ -34,6 +35,7 @@ export async function login(body: LoginRequest): Promise<AuthResponse> {
     skipAuth: true,
     skipAuthRefresh: true,
   })
+  setSessionMarker()
   return data
 }
 
@@ -42,6 +44,7 @@ export async function register(body: RegisterRequest): Promise<AuthResponse> {
     skipAuth: true,
     skipAuthRefresh: true,
   })
+  setSessionMarker()
   return data
 }
 

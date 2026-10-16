@@ -48,6 +48,26 @@ export async function dbPing(): Promise<boolean> {
   }
 }
 
+/**
+ * Startup gate: prove the database is reachable AND migrated before the server
+ * accepts traffic. Throws with an actionable message instead of booting broken.
+ */
+export async function assertDatabaseReady(): Promise<void> {
+  try {
+    await pool.query('SELECT 1')
+  } catch (error) {
+    const reason = error instanceof Error && error.message ? error.message : String(error)
+    throw new Error(`Database connection failed: check DATABASE_URL (${reason})`)
+  }
+
+  const { rows } = await pool.query<{ regclass: string | null }>(
+    `SELECT to_regclass('public.users') AS regclass`,
+  )
+  if (!rows[0]?.regclass) {
+    throw new Error('Tables missing: run npm run migrate')
+  }
+}
+
 export async function closePool(): Promise<void> {
   await pool.end()
 }

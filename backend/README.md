@@ -22,7 +22,7 @@ rank and explain** what those checks proved.
 | Logging    | pino (+ pino-http)                                                     |
 | Tests      | Vitest + supertest                                                     |
 
-## Quick start
+## Local setup
 
 ```bash
 # 1. Infrastructure (Postgres + Redis + S3-compatible store)
@@ -40,8 +40,26 @@ npm run dev            # API on http://localhost:5000 (tsx watch)
 npm run worker         # in a second terminal: executes queued verification runs
 ```
 
+The `DATABASE_URL` user/password/database **must match** `POSTGRES_USER` /
+`POSTGRES_PASSWORD` / `POSTGRES_DB` in `docker-compose.yml` (both default to
+`proofloop`). A mismatch fails at startup with
+`Database connection failed: check DATABASE_URL` — or, if the container was
+recreated with new credentials over old volumes, `drop the pgdata volume and
+docker compose up -d again`. Skipping `npm run migrate` fails at startup with
+`Tables missing: run npm run migrate`.
+
+The server checks the database before it starts accepting traffic; liveness and
+DB status are exposed at `GET /api/v1/health`.
+
 `npm run dev` alone serves the API; the run pipeline needs the worker connection to
-BullMQ, so start both while testing runs. Health check: `GET /api/v1/health`.
+BullMQ, so start both while testing runs.
+
+### Manual error-path testing
+
+- **Wrong password** — sign in with a bad password: the form shows "Invalid email or password" (401).
+- **Duplicate email** — register an existing email: the form shows "An account with this email already exists" (409).
+- **DB stopped** — `docker compose stop postgres`, then try to sign in: the form shows "Service temporarily unavailable" (503); `npm run dev` also exits at startup with `Database connection failed`.
+- **Missing tables** — with Postgres running but a fresh volume, skip `npm run migrate` and start the API: startup exits with `Tables missing: run npm run migrate`.
 
 The frontend talks to this API when `frontend/.env` has `VITE_USE_MOCKS=false`
 (`VITE_API_URL=http://localhost:5000/api/v1`). With `VITE_USE_MOCKS=true` it runs fully

@@ -1,7 +1,18 @@
 import type { Request, Response } from 'express'
-import { dbPing } from '../config/db.js'
+import { pool } from '../config/db.js'
+import { isProduction } from '../config/env.js'
 
 export async function healthCheck(_req: Request, res: Response): Promise<void> {
-  const dbUp = await dbPing()
-  res.status(dbUp ? 200 : 503).json({ status: dbUp ? 'ok' : 'error', db: dbUp ? 'up' : 'down' })
+  try {
+    await pool.query('SELECT 1')
+    res.json({ status: 'ok', db: 'up' })
+  } catch (error) {
+    const reason =
+      error instanceof Error && error.message ? error.message : String(error)
+    res.status(503).json({
+      status: 'error',
+      db: 'down',
+      message: isProduction ? 'Database unavailable' : `Database check failed: ${reason}`,
+    })
+  }
 }
