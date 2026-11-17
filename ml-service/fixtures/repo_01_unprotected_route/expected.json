@@ -1,0 +1,19 @@
+{
+  "repo": "repo_01_unprotected_route",
+  "findings": [
+    {
+      "analyzer": "route_security",
+      "type": "unprotected_route",
+      "file": "server.js",
+      "line": 8,
+      "severity": "high"
+    },
+    {
+      "analyzer": "route_security",
+      "type": "unprotected_route",
+      "file": "server.js",
+      "line": 10,
+      "severity": "high"
+    }
+  ]
+}

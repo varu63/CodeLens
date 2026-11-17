@@ -1,0 +1,7 @@
+{
+  "name": "fixture-unprotected-route",
+  "private": true,
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

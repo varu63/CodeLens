@@ -1,0 +1,7 @@
+{
+  "name": "fixture-slow-endpoint",
+  "private": true,
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "repo": "repo_02_failing_test",
+  "findings": [
+    {
+      "analyzer": "test_runner",
+      "type": "failing_test",
+      "file": "tests/calculator.test.js",
+      "line": 5,
+      "severity": "high",
+      "note": "assert on line 6 fails: add(1, 1) is 2, expected 3"
+    }
+  ]
+}

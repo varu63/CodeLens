@@ -1,0 +1,7 @@
+{
+  "name": "fixture-clean",
+  "private": true,
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

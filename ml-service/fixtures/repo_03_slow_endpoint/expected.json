@@ -1,0 +1,13 @@
+{
+  "repo": "repo_03_slow_endpoint",
+  "findings": [
+    {
+      "analyzer": "load_test",
+      "type": "slow_endpoint",
+      "file": "server.js",
+      "line": 6,
+      "severity": "medium",
+      "note": "GET /report sleeps 750ms"
+    }
+  ]
+}

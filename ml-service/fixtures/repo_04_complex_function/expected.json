@@ -1,0 +1,13 @@
+{
+  "repo": "repo_04_complex_function",
+  "findings": [
+    {
+      "analyzer": "complexity",
+      "type": "high_complexity",
+      "file": "src/orders.js",
+      "line": 1,
+      "severity": "medium",
+      "note": "priceOrder has deep nesting and many branches"
+    }
+  ]
+}
